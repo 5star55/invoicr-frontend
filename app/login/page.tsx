@@ -6,7 +6,6 @@ import Link from 'next/link'
 export default function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [rememberMe, setRememberMe] = useState(false)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -14,8 +13,9 @@ export default function Login() {
   }
 
   return (
-    <div className='flex flex-col items-center justify-center min-h-screen py-2'>
-      <div className='w-full max-w-md'>
+    <div className='flex flex-col min-h-screen bg-black'>
+      <div className='flex-1 flex flex-col items-center justify-center py-2'>
+        <div className='w-full max-w-md'>
         {/* Header */}
         <div className='text-center mb-12'>
           <h1 className='text-4xl font-bold text-blue-500 mb-2'>Invoicr</h1>
@@ -66,20 +66,6 @@ export default function Login() {
               </div>
             </div>
 
-            {/* Remember Me Checkbox */}
-            <div className='flex items-center'>
-              <input
-                type='checkbox'
-                id='remember'
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
-                className='w-4 h-4 rounded border-slate-600 bg-slate-700 cursor-pointer'
-              />
-              <label htmlFor='remember' className='ml-2 text-sm text-gray-400 cursor-pointer'>
-                Remember me for 30 days
-              </label>
-            </div>
-
             {/* Sign In Button */}
             <button
               type='submit'
@@ -92,7 +78,7 @@ export default function Login() {
           {/* Sign Up Link */}
           <div className='text-center mt-6'>
             <p className='text-gray-400 text-sm'>
-              Don't have an account?{' '}
+              Don&apos;t have an account?{' '}
               <Link href='/signup' className='text-white font-semibold hover:text-blue-400'>
                 SIGN UP
               </Link>
@@ -100,10 +86,6 @@ export default function Login() {
           </div>
         </div>
       </div>
-
-      {/* Footer */}
-      <div className='mt-12 text-gray-500 text-xs text-center'>
-        <p>© 2024 Invoicr. All rights reserved.</p>
       </div>
     </div>
   )
