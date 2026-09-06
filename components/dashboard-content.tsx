@@ -3,7 +3,13 @@
 import Link from "next/link"
 import { Plus } from "lucide-react"
 import { useEffect, useState } from "react"
-import { getClients, getInvoices, type Client, type Invoice } from "@/lib/api"
+import {
+  getClients,
+  getInvoiceDisplayStatus,
+  getInvoices,
+  type Client,
+  type Invoice,
+} from "@/lib/api"
 import { useCurrency } from "./currency-context"
 import { CreateClientForm, CreateInvoiceForm } from "./create-forms"
 import { SectionHeader } from "./dashboard-shell"
@@ -221,7 +227,7 @@ function InvoicesList() {
                       </td>
                       <td className="py-4">
                         <span className="rounded-full bg-[#eeeaff] px-2.5 py-1 text-[11px] font-semibold text-[#7065e8]">
-                          {invoice.status}
+                          {getInvoiceDisplayStatus(invoice)}
                         </span>
                       </td>
                       <td className="py-4 font-semibold">

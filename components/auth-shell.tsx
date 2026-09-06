@@ -18,9 +18,9 @@ export function AuthShell({
           className="relative flex items-center gap-2.5 text-lg font-bold"
         >
           <span className="grid size-8 place-items-center rounded-xl bg-[#8a7dff] text-sm">
-            N
+            I
           </span>
-          Nimbus
+          Invoicr
         </Link>
         <div className="relative max-w-md">
           <p className="mb-5 text-[11px] font-bold tracking-[0.2em] text-[#aaa3ff] uppercase">
@@ -52,7 +52,7 @@ export function AuthShell({
           </div>
         </div>
         <p className="relative text-xs text-white/30">
-          © 2026 Nimbus. Built for thoughtful teams.
+          © 2026 Invoicr. Built for thoughtful freelancers.
         </p>
       </section>
       <section className="flex items-center justify-center px-5 py-10 sm:px-10">
@@ -63,9 +63,9 @@ export function AuthShell({
               className="flex items-center gap-2.5 text-lg font-bold text-[#20212b]"
             >
               <span className="grid size-8 place-items-center rounded-xl bg-[#8a7dff] text-sm text-white">
-                N
+                I
               </span>
-              Nimbus
+              Invoicr
             </Link>
           </div>
           <div className="mb-8">
@@ -73,7 +73,7 @@ export function AuthShell({
               {mode === "login" ? "Welcome back" : "Get started"}
             </p>
             <h2 className="text-3xl font-semibold tracking-tight text-[#20212b]">
-              {mode === "login" ? "Sign in to Nimbus" : "Create your workspace"}
+              {mode === "login" ? "Sign in to Invoicr" : "Create your account"}
             </h2>
             <p className="mt-2 text-sm text-[#777b8f]">
               {mode === "login"

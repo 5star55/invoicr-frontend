@@ -16,7 +16,15 @@ import {
   X,
 } from "lucide-react"
 import { useState } from "react"
-import { clearStoredAuth } from "@/lib/api"
+import { useEffect } from "react"
+import {
+  clearStoredAuth,
+  getClients,
+  getInvoiceDisplayStatus,
+  getInvoices,
+  type Client,
+  type Invoice,
+} from "@/lib/api"
 import { useAuthUser } from "./auth-user-context"
 
 type DashboardShellProps = {
@@ -33,6 +41,10 @@ export function DashboardShell({ children }: DashboardShellProps) {
   const pathname = usePathname()
   const router = useRouter()
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [clients, setClients] = useState<Client[]>([])
+  const [invoices, setInvoices] = useState<Invoice[]>([])
+  const [notificationsOpen, setNotificationsOpen] = useState(false)
   const user = useAuthUser()
   const displayName = user?.name?.trim() || "Freelancer"
   const initials = displayName
@@ -41,6 +53,68 @@ export function DashboardShell({ children }: DashboardShellProps) {
     .join("")
     .slice(0, 2)
     .toUpperCase()
+
+  const orderedClients = [...clients].sort(
+    (first, second) =>
+      new Date(first.createdAt).getTime() - new Date(second.createdAt).getTime()
+  )
+  const orderedInvoices = [...invoices].sort(
+    (first, second) =>
+      new Date(first.createdAt).getTime() - new Date(second.createdAt).getTime()
+  )
+
+  useEffect(() => {
+    Promise.all([getClients(), getInvoices()])
+      .then(([clientData, invoiceData]) => {
+        setClients(clientData)
+        setInvoices(invoiceData)
+      })
+      .catch(() => {
+        setClients([])
+        setInvoices([])
+      })
+  }, [])
+
+  const normalizedSearch = searchQuery.trim().toLowerCase()
+  const matchingClients = normalizedSearch
+    ? orderedClients.filter((client, index) =>
+        [
+          `CLI-${String(index + 1).padStart(3, "0")}`,
+          client.name,
+          client.email,
+          client.companyName,
+          client.phone,
+        ]
+          .filter(Boolean)
+          .some((value) => value!.toLowerCase().includes(normalizedSearch))
+      )
+    : []
+  const matchingInvoices = normalizedSearch
+    ? orderedInvoices.filter((invoice, index) =>
+        [
+          `INV-${String(index + 1).padStart(3, "0")}`,
+          getInvoiceDisplayStatus(invoice),
+        ].some((value) => value.toLowerCase().includes(normalizedSearch))
+      )
+    : []
+  const hasSearchResults =
+    matchingClients.length > 0 || matchingInvoices.length > 0
+  const notifications = orderedInvoices
+    .map((invoice) => ({
+      invoice,
+      status: getInvoiceDisplayStatus(invoice),
+    }))
+    .filter(({ invoice, status }) => {
+      if (status === "OVERDUE") return true
+      if (status === "PAID" || status === "CANCELLED") return false
+
+      const dueDate = new Date(`${invoice.dueDate.slice(0, 10)}T00:00:00`)
+      const daysUntilDue = Math.ceil(
+        (dueDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+      )
+
+      return daysUntilDue >= 0 && daysUntilDue <= 7
+    })
 
   return (
     <div className="min-h-screen bg-[#f7f8fc] text-[#20212b]">
@@ -53,9 +127,9 @@ export function DashboardShell({ children }: DashboardShellProps) {
             className="flex items-center gap-2.5 text-lg font-bold tracking-tight"
           >
             <span className="grid size-8 place-items-center rounded-xl bg-[#8a7dff] text-sm text-white">
-              N
+              I
             </span>
-            Nimbus
+            Invoicr
           </Link>
           <button
             onClick={() => setMobileOpen(false)}
@@ -162,17 +236,111 @@ export function DashboardShell({ children }: DashboardShellProps) {
               className="absolute top-1/2 left-3 -translate-y-1/2 text-[#a4a6b5]"
             />
             <input
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
               className="h-10 w-full rounded-xl bg-[#f5f6fa] pr-4 pl-10 text-sm outline-none placeholder:text-[#a4a6b5] focus:ring-2 focus:ring-[#8a7dff]/25"
               placeholder="Search anything..."
             />
+            {normalizedSearch && (
+              <div className="absolute top-12 right-0 left-0 z-50 overflow-hidden rounded-xl border border-[#e9eaf1] bg-white shadow-xl">
+                {hasSearchResults ? (
+                  <div className="max-h-80 overflow-y-auto py-2">
+                    {matchingClients.map((client) => {
+                      const clientIndex = orderedClients.findIndex(
+                        (item) => item.id === client.id
+                      )
+
+                      return (
+                        <Link
+                          key={`client-${client.id}`}
+                          href={`/contacts/${client.id}`}
+                          onClick={() => setSearchQuery("")}
+                          className="block px-4 py-3 hover:bg-[#f7f8fc]"
+                        >
+                          <p className="text-sm font-semibold">
+                            CLI-{String(clientIndex + 1).padStart(3, "0")} ·{" "}
+                            {client.name}
+                          </p>
+                          <p className="mt-1 text-xs text-[#8a8d9e]">
+                            Client · {client.email}
+                          </p>
+                        </Link>
+                      )
+                    })}
+                    {matchingInvoices.map((invoice) => {
+                      const invoiceIndex = orderedInvoices.findIndex(
+                        (item) => item.id === invoice.id
+                      )
+
+                      return (
+                        <Link
+                          key={`invoice-${invoice.id}`}
+                          href={`/deals/${invoice.id}`}
+                          onClick={() => setSearchQuery("")}
+                          className="block px-4 py-3 hover:bg-[#f7f8fc]"
+                        >
+                          <p className="text-sm font-semibold">
+                            INV-{String(invoiceIndex + 1).padStart(3, "0")}
+                          </p>
+                          <p className="mt-1 text-xs text-[#8a8d9e]">
+                            Invoice · {getInvoiceDisplayStatus(invoice)}
+                          </p>
+                        </Link>
+                      )
+                    })}
+                  </div>
+                ) : (
+                  <p className="px-4 py-4 text-sm text-[#777b8f]">
+                    No clients or invoices found.
+                  </p>
+                )}
+              </div>
+            )}
           </div>
           <div className="ml-auto flex items-center gap-3">
             <button
+              onClick={() => setNotificationsOpen((open) => !open)}
               className="grid size-10 place-items-center rounded-xl text-[#73768a] hover:bg-[#f5f6fa]"
               aria-label="Notifications"
             >
               <Bell size={18} />
+              {notifications.length > 0 && (
+                <span className="absolute mt-[-22px] ml-5 grid size-4 place-items-center rounded-full bg-[#e87979] text-[9px] font-bold text-white">
+                  {notifications.length}
+                </span>
+              )}
             </button>
+            {notificationsOpen && (
+              <div className="absolute top-16 right-20 z-50 w-80 overflow-hidden rounded-xl border border-[#e9eaf1] bg-white shadow-xl">
+                <div className="border-b border-[#f0f0f4] px-4 py-3">
+                  <p className="text-sm font-semibold">Notifications</p>
+                </div>
+                {notifications.length === 0 ? (
+                  <p className="px-4 py-5 text-sm text-[#777b8f]">
+                    You are all caught up.
+                  </p>
+                ) : (
+                  notifications.map(({ invoice, status }) => (
+                    <Link
+                      key={invoice.id}
+                      href={`/deals/${invoice.id}`}
+                      onClick={() => setNotificationsOpen(false)}
+                      className="block border-b border-[#f4f4f7] px-4 py-3 hover:bg-[#f7f8fc]"
+                    >
+                      <p className="text-sm font-semibold">
+                        {status === "OVERDUE"
+                          ? "Invoice overdue"
+                          : "Invoice due soon"}
+                      </p>
+                      <p className="mt-1 text-xs text-[#777b8f]">
+                        {invoice.invoiceNumber} · Due{" "}
+                        {new Date(invoice.dueDate).toLocaleDateString()}
+                      </p>
+                    </Link>
+                  ))
+                )}
+              </div>
+            )}
             <button
               className="grid size-10 place-items-center rounded-xl text-[#73768a] hover:bg-[#f5f6fa]"
               aria-label="Help"

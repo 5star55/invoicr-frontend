@@ -57,6 +57,20 @@ export type InvoiceDetails = Invoice & {
   user: User
 }
 
+export function getInvoiceDisplayStatus(
+  invoice: Pick<Invoice, "status" | "dueDate">
+): InvoiceStatus {
+  if (invoice.status === "PAID" || invoice.status === "CANCELLED") {
+    return invoice.status
+  }
+
+  const dueDate = new Date(`${invoice.dueDate.slice(0, 10)}T00:00:00`)
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
+  return dueDate < today ? "OVERDUE" : invoice.status
+}
+
 type LoginResponse = AuthUser & { accessToken: string }
 
 export function getStoredAuth() {

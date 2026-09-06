@@ -9,7 +9,13 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { useEffect, useState } from "react"
-import { getClients, getInvoices, type Client, type Invoice } from "@/lib/api"
+import {
+  getClients,
+  getInvoiceDisplayStatus,
+  getInvoices,
+  type Client,
+  type Invoice,
+} from "@/lib/api"
 import { useAuthUser } from "./auth-user-context"
 import { useCurrency } from "./currency-context"
 import { PageLink, SectionHeader } from "./dashboard-shell"
@@ -44,13 +50,18 @@ export function LiveDashboard() {
     (sum, invoice) => sum + (Number(invoice.total) || 0),
     0
   )
-  const paidInvoices = invoices.filter((invoice) => invoice.status === "PAID")
+  const paidInvoices = invoices.filter(
+    (invoice) => getInvoiceDisplayStatus(invoice) === "PAID"
+  )
   const paidRevenue = paidInvoices.reduce(
     (sum, invoice) => sum + (Number(invoice.total) || 0),
     0
   )
   const outstandingRevenue = invoices
-    .filter((invoice) => !["PAID", "CANCELLED"].includes(invoice.status))
+    .filter(
+      (invoice) =>
+        !["PAID", "CANCELLED"].includes(getInvoiceDisplayStatus(invoice))
+    )
     .reduce((sum, invoice) => sum + (Number(invoice.total) || 0), 0)
   const averageInvoice = invoices.length ? totalRevenue / invoices.length : 0
   const displayName = user?.name?.trim() || "Freelancer"
@@ -237,7 +248,7 @@ export function LiveDashboard() {
                         </td>
                         <td className="py-4">
                           <span className="rounded-full bg-[#eeeaff] px-2.5 py-1 text-[11px] font-semibold text-[#7065e8]">
-                            {invoice.status}
+                            {getInvoiceDisplayStatus(invoice)}
                           </span>
                         </td>
                         <td className="py-4 text-right font-semibold">
