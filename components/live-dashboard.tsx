@@ -85,6 +85,10 @@ export function LiveDashboard() {
   })
 
   const maximumRevenue = Math.max(...months.map((month) => month.total), 1)
+  const orderedInvoices = [...invoices].sort(
+    (first, second) =>
+      new Date(first.createdAt).getTime() - new Date(second.createdAt).getTime()
+  )
 
   return (
     <>
@@ -230,32 +234,41 @@ export function LiveDashboard() {
                     </tr>
                   </thead>
                   <tbody>
-                    {invoices.slice(0, 5).map((invoice) => (
-                      <tr
-                        key={invoice.id}
-                        className="border-b border-[#f4f4f7] last:border-0"
-                      >
-                        <td className="py-4 font-medium">
-                          <Link
-                            href={`/deals/${invoice.id}`}
-                            className="text-[#7065e8] hover:text-[#5148c8]"
+                    {orderedInvoices
+                      .slice(-5)
+                      .reverse()
+                      .map((invoice) => {
+                        const invoiceIndex = orderedInvoices.findIndex(
+                          (item) => item.id === invoice.id
+                        )
+
+                        return (
+                          <tr
+                            key={invoice.id}
+                            className="border-b border-[#f4f4f7] last:border-0"
                           >
-                            {invoice.invoiceNumber}
-                          </Link>
-                        </td>
-                        <td className="py-4 text-[#777b8f]">
-                          {new Date(invoice.dueDate).toLocaleDateString()}
-                        </td>
-                        <td className="py-4">
-                          <span className="rounded-full bg-[#eeeaff] px-2.5 py-1 text-[11px] font-semibold text-[#7065e8]">
-                            {getInvoiceDisplayStatus(invoice)}
-                          </span>
-                        </td>
-                        <td className="py-4 text-right font-semibold">
-                          {formatCurrency(invoice.total)}
-                        </td>
-                      </tr>
-                    ))}
+                            <td className="py-4 font-medium">
+                              <Link
+                                href={`/deals/${invoice.id}`}
+                                className="text-[#7065e8] hover:text-[#5148c8]"
+                              >
+                                {`INV-${String(invoiceIndex + 1).padStart(3, "0")}`}
+                              </Link>
+                            </td>
+                            <td className="py-4 text-[#777b8f]">
+                              {new Date(invoice.dueDate).toLocaleDateString()}
+                            </td>
+                            <td className="py-4">
+                              <span className="rounded-full bg-[#eeeaff] px-2.5 py-1 text-[11px] font-semibold text-[#7065e8]">
+                                {getInvoiceDisplayStatus(invoice)}
+                              </span>
+                            </td>
+                            <td className="py-4 text-right font-semibold">
+                              {formatCurrency(invoice.total)}
+                            </td>
+                          </tr>
+                        )
+                      })}
                   </tbody>
                 </table>
               </div>
