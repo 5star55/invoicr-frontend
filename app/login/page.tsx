@@ -1,92 +1,66 @@
-'use client'
+"use client"
 
-import React, { useState } from 'react'
-import Link from 'next/link'
+import { AuthShell } from "@/components/auth-shell"
+import { login, storeAuth } from "@/lib/api"
+import { useState } from "react"
+import { useRouter } from "next/navigation"
 
-export default function Login() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+export default function LoginPage() {
+  const router = useRouter()
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [error, setError] = useState("")
+  const [loading, setLoading] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    // Handle login logic here
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    setError("")
+    setLoading(true)
+    try {
+      const auth = await login(email, password)
+      storeAuth(auth)
+      router.push("/")
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to sign in.")
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
-    <div className='flex flex-col min-h-screen bg-black'>
-      <div className='flex-1 flex flex-col items-center justify-center py-2'>
-        <div className='w-full max-w-md'>
-        {/* Header */}
-        <div className='text-center mb-12'>
-          <h1 className='text-4xl font-bold text-blue-500 mb-2'>Invoicr</h1>
-          <p className='text-gray-400'>Master your financials.</p>
-        </div>
-
-        {/* Login Form */}
-        <div className='border border-slate-700 rounded-lg p-8 bg-oklch(20.8% 0.042 265.755)'>
-          <form onSubmit={handleSubmit} className='space-y-6'>
-            {/* Email Field */}
-            <div>
-              <label className='block text-xs font-semibold text-gray-300 mb-2 tracking-wide'>
-                EMAIL ADDRESS
-              </label>
-              <div className='relative'>
-                <span className='absolute left-3 top-3 text-gray-500'>✉</span>
-                <input
-                  type='email'
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder='freelancer@example.com'
-                  className='w-full pl-10 pr-4 py-3 bg-slate-700 border border-slate-600 rounded text-white placeholder-gray-500 focus:outline-none focus:border-blue-500'
-                  required
-                />
-              </div>
-            </div>
-
-            {/* Password Field */}
-            <div>
-              <div className='flex justify-between items-center mb-2'>
-                <label className='block text-xs font-semibold text-gray-300 tracking-wide'>
-                  PASSWORD
-                </label>
-                <Link href='#' className='text-xs text-gray-400 hover:text-gray-300'>
-                  Forgot password?
-                </Link>
-              </div>
-              <div className='relative'>
-                <span className='absolute left-3 top-3 text-gray-500'>🔒</span>
-                <input
-                  type='password'
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder='••••••••'
-                  className='w-full pl-10 pr-4 py-3 bg-slate-700 border border-slate-600 rounded text-white placeholder-gray-500 focus:outline-none focus:border-blue-500'
-                  required
-                />
-              </div>
-            </div>
-
-            {/* Sign In Button */}
-            <button
-              type='submit'
-              className='w-full bg-blue-500 text-uppercase hover:bg-blue-600 text-white font-semibold py-3 rounded transition-colors'
-            >
-              Sign In
-            </button>
-          </form>
-
-          {/* Sign Up Link */}
-          <div className='text-center mt-6'>
-            <p className='text-gray-400 text-sm'>
-              Don&apos;t have an account?{' '}
-              <Link href='/signup' className='text-white font-semibold hover:text-blue-400'>
-                SIGN UP
-              </Link>
-            </p>
-          </div>
-        </div>
-      </div>
-      </div>
-    </div>
+    <AuthShell mode="login">
+      <form className="space-y-5" onSubmit={handleSubmit}>
+        <label className="block text-sm font-medium text-[#3c3f4d]">
+          Email address
+          <input
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            type="email"
+            placeholder="you@company.com"
+            className="mt-2 h-12 w-full rounded-xl border border-[#e0e1e9] bg-white px-4 text-sm transition outline-none focus:border-[#8277f2] focus:ring-4 focus:ring-[#8277f2]/10"
+            required
+          />
+        </label>
+        <label className="block text-sm font-medium text-[#3c3f4d]">
+          Password
+          <input
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            type="password"
+            placeholder="••••••••"
+            className="mt-2 h-12 w-full rounded-xl border border-[#e0e1e9] bg-white px-4 text-sm transition outline-none focus:border-[#8277f2] focus:ring-4 focus:ring-[#8277f2]/10"
+            required
+          />
+        </label>
+        {error && <p className="text-sm text-red-600">{error}</p>}
+        <button
+          disabled={loading}
+          type="submit"
+          className="h-12 w-full rounded-xl bg-[#7469ed] text-sm font-semibold text-white shadow-lg shadow-[#7469ed]/20 transition hover:bg-[#6257d6] disabled:opacity-60"
+        >
+          {loading ? "Signing in..." : "Sign in"}
+        </button>
+      </form>
+    </AuthShell>
   )
 }

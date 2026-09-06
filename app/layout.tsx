@@ -1,13 +1,10 @@
-import { Geist, Geist_Mono, Merriweather, Space_Grotesk } from "next/font/google"
+import { Geist, Geist_Mono } from "next/font/google"
 
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
-import { cn } from "@/lib/utils";
-import Footer from "@/components/ui/footer";
-
-const spaceGroteskHeading = Space_Grotesk({subsets:['latin'],variable:'--font-heading'});
-
-const merriweather = Merriweather({subsets:['latin'],variable:'--font-serif'});
+import { AuthGuard } from "@/components/auth-guard"
+import { CurrencyProvider } from "@/components/currency-context"
+import { cn } from "@/lib/utils"
 
 const fontSans = Geist({
   subsets: ["latin"],
@@ -27,13 +24,15 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={cn("antialiased dark", fontSans.variable, fontMono.variable, "font-serif", merriweather.variable, spaceGroteskHeading.variable)}
+      className={cn("antialiased", fontSans.variable, fontMono.variable)}
     >
       <body>
-        <ThemeProvider>{children}</ThemeProvider>
-        <Footer/>
+        <ThemeProvider>
+          <CurrencyProvider>
+            <AuthGuard>{children}</AuthGuard>
+          </CurrencyProvider>
+        </ThemeProvider>
       </body>
-      
     </html>
   )
 }

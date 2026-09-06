@@ -2,10 +2,7 @@
 
 import * as React from "react"
 
-function ThemeProvider({
-  children,
-  ...props
-}: React.PropsWithChildren) {
+function ThemeProvider({ children, ...props }: React.PropsWithChildren) {
   return <>{children}</>
 }
 
