@@ -320,24 +320,30 @@ export function DashboardShell({ children }: DashboardShellProps) {
                     You are all caught up.
                   </p>
                 ) : (
-                  notifications.map(({ invoice, status }) => (
-                    <Link
-                      key={invoice.id}
-                      href={`/deals/${invoice.id}`}
-                      onClick={() => setNotificationsOpen(false)}
-                      className="block border-b border-[#f4f4f7] px-4 py-3 hover:bg-[#f7f8fc]"
-                    >
-                      <p className="text-sm font-semibold">
-                        {status === "OVERDUE"
-                          ? "Invoice overdue"
-                          : "Invoice due soon"}
-                      </p>
-                      <p className="mt-1 text-xs text-[#777b8f]">
-                        {invoice.invoiceNumber} · Due{" "}
-                        {new Date(invoice.dueDate).toLocaleDateString()}
-                      </p>
-                    </Link>
-                  ))
+                  notifications.map(({ invoice, status }) => {
+                    const invoiceIndex = orderedInvoices.findIndex(
+                      (item) => item.id === invoice.id
+                    )
+
+                    return (
+                      <Link
+                        key={invoice.id}
+                        href={`/deals/${invoice.id}`}
+                        onClick={() => setNotificationsOpen(false)}
+                        className="block border-b border-[#f4f4f7] px-4 py-3 hover:bg-[#f7f8fc]"
+                      >
+                        <p className="text-sm font-semibold">
+                          {status === "OVERDUE"
+                            ? "Invoice overdue"
+                            : "Invoice due soon"}
+                        </p>
+                        <p className="mt-1 text-xs text-[#777b8f]">
+                          INV-{String(invoiceIndex + 1).padStart(3, "0")} · Due{" "}
+                          {new Date(invoice.dueDate).toLocaleDateString()}
+                        </p>
+                      </Link>
+                    )
+                  })
                 )}
               </div>
             )}

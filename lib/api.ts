@@ -1,7 +1,8 @@
 import axios, { type AxiosRequestConfig } from "axios"
 
 export const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL
+  process.env.NEXT_PUBLIC_API_BASE_URL ??
+  "https://invoicr-backend-sphi.onrender.com"
 
 export type AuthUser = { id: number; name: string | null; email: string }
 export type User = AuthUser & {

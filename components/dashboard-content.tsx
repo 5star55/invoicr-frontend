@@ -1,17 +1,13 @@
 "use client"
 
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Plus } from "lucide-react"
 import { useEffect, useState } from "react"
-import {
-  getClients,
-  getInvoiceDisplayStatus,
-  getInvoices,
-  type Client,
-  type Invoice,
-} from "@/lib/api"
+import { getClients, getInvoices, type Client, type Invoice } from "@/lib/api"
 import { useCurrency } from "./currency-context"
 import { CreateClientForm, CreateInvoiceForm } from "./create-forms"
+import { InvoiceStatusBadge } from "./invoice-status-badge"
 import { SectionHeader } from "./dashboard-shell"
 
 function DataMessage({ children }: { children: React.ReactNode }) {
@@ -19,6 +15,7 @@ function DataMessage({ children }: { children: React.ReactNode }) {
 }
 
 function ClientsList() {
+  const router = useRouter()
   const [clients, setClients] = useState<Client[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
@@ -84,7 +81,15 @@ function ClientsList() {
                 {orderedClients.map((client, index) => (
                   <tr
                     key={client.id}
-                    className="border-b border-[#f4f4f7] last:border-0"
+                    className="cursor-pointer border-b border-[#f4f4f7] last:border-0 hover:bg-[#fafaff]"
+                    onClick={() => router.push(`/contacts/${client.id}`)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        router.push(`/contacts/${client.id}`)
+                      }
+                    }}
+                    tabIndex={0}
+                    role="link"
                   >
                     <td className="py-4 text-[#777b8f]">
                       {`CLI-${String(index + 1).padStart(3, "0")}`}
@@ -122,6 +127,7 @@ function ClientsList() {
 }
 
 function InvoicesList() {
+  const router = useRouter()
   const [invoices, setInvoices] = useState<Invoice[]>([])
   const [clients, setClients] = useState<Client[]>([])
   const [loading, setLoading] = useState(true)
@@ -207,7 +213,15 @@ function InvoicesList() {
                   return (
                     <tr
                       key={invoice.id}
-                      className="border-b border-[#f4f4f7] last:border-0"
+                      className="cursor-pointer border-b border-[#f4f4f7] last:border-0 hover:bg-[#fafaff]"
+                      onClick={() => router.push(`/deals/${invoice.id}`)}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          router.push(`/deals/${invoice.id}`)
+                        }
+                      }}
+                      tabIndex={0}
+                      role="link"
                     >
                       <td className="py-4 font-medium">
                         <Link
@@ -226,9 +240,7 @@ function InvoicesList() {
                         {new Date(invoice.dueDate).toLocaleDateString()}
                       </td>
                       <td className="py-4">
-                        <span className="rounded-full bg-[#eeeaff] px-2.5 py-1 text-[11px] font-semibold text-[#7065e8]">
-                          {getInvoiceDisplayStatus(invoice)}
-                        </span>
+                        <InvoiceStatusBadge invoice={invoice} />
                       </td>
                       <td className="py-4 font-semibold">
                         {formatCurrency(invoice.total)}

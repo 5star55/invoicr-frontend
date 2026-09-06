@@ -8,6 +8,7 @@ import {
   Users,
 } from "lucide-react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import {
   getClients,
@@ -18,6 +19,7 @@ import {
 } from "@/lib/api"
 import { useAuthUser } from "./auth-user-context"
 import { useCurrency } from "./currency-context"
+import { InvoiceStatusBadge } from "./invoice-status-badge"
 import { PageLink, SectionHeader } from "./dashboard-shell"
 
 function DataMessage({ children }: { children: React.ReactNode }) {
@@ -25,6 +27,7 @@ function DataMessage({ children }: { children: React.ReactNode }) {
 }
 
 export function LiveDashboard() {
+  const router = useRouter()
   const user = useAuthUser()
   const { formatCurrency } = useCurrency()
   const [invoices, setInvoices] = useState<Invoice[]>([])
@@ -245,7 +248,15 @@ export function LiveDashboard() {
                         return (
                           <tr
                             key={invoice.id}
-                            className="border-b border-[#f4f4f7] last:border-0"
+                            className="cursor-pointer border-b border-[#f4f4f7] last:border-0 hover:bg-[#fafaff]"
+                            onClick={() => router.push(`/deals/${invoice.id}`)}
+                            onKeyDown={(event) => {
+                              if (event.key === "Enter" || event.key === " ") {
+                                router.push(`/deals/${invoice.id}`)
+                              }
+                            }}
+                            tabIndex={0}
+                            role="link"
                           >
                             <td className="py-4 font-medium">
                               <Link
@@ -259,9 +270,7 @@ export function LiveDashboard() {
                               {new Date(invoice.dueDate).toLocaleDateString()}
                             </td>
                             <td className="py-4">
-                              <span className="rounded-full bg-[#eeeaff] px-2.5 py-1 text-[11px] font-semibold text-[#7065e8]">
-                                {getInvoiceDisplayStatus(invoice)}
-                              </span>
+                              <InvoiceStatusBadge invoice={invoice} />
                             </td>
                             <td className="py-4 text-right font-semibold">
                               {formatCurrency(invoice.total)}

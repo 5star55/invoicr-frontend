@@ -4,15 +4,11 @@ import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
 import { useParams } from "next/navigation"
 import { useEffect, useState } from "react"
-import {
-  getInvoice,
-  getInvoiceDisplayStatus,
-  getInvoices,
-  type InvoiceDetails,
-} from "@/lib/api"
+import { getInvoice, getInvoices, type InvoiceDetails } from "@/lib/api"
 import { useCurrency } from "@/components/currency-context"
 import { DashboardShell, SectionHeader } from "@/components/dashboard-shell"
 import { EditInvoiceForm } from "@/components/edit-forms"
+import { InvoiceStatusBadge } from "@/components/invoice-status-badge"
 
 export default function InvoiceDetailsPage() {
   const params = useParams<{ id: string }>()
@@ -92,7 +88,7 @@ export default function InvoiceDetailsPage() {
         <>
           <SectionHeader
             eyebrow="Invoice details"
-            title={displayInvoiceId || invoice.invoiceNumber}
+            title={displayInvoiceId || "Loading invoice ID..."}
             description={`Due ${new Date(invoice.dueDate).toLocaleDateString()}`}
             action={
               <button
@@ -117,9 +113,7 @@ export default function InvoiceDetailsPage() {
                     </p>
                   )}
                 </div>
-                <span className="rounded-full bg-[#eeeaff] px-2.5 py-1 text-[11px] font-semibold text-[#7065e8]">
-                  {getInvoiceDisplayStatus(invoice)}
-                </span>
+                <InvoiceStatusBadge invoice={invoice} />
               </div>
               <div className="mt-5 overflow-x-auto">
                 <table className="w-full min-w-120 text-left text-sm">
